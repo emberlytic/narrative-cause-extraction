@@ -1,15 +1,15 @@
-# Case Study: Meridian Insurance Brokers
+# Case Study: Hartwell Claims Group
 
 > Client names and identifying details are fictional.
 > The problem structure, workflow logic, and solution approach are based on real-world patterns from actual engagements.
 
 ## Client
 
-Meridian Insurance Brokers handles personal lines and commercial accounts across several regions. Their claims operations team periodically needs to analyze large volumes of historical claim investigation reports to identify patterns, respond to regulatory inquiries, or support underwriting review.
+Hartwell Claims Group is a third-party claims management firm that handles investigation and adjudication for several regional insurers. Their operations team processes hundreds of investigation reports per month across personal lines, commercial property, and liability files.
 
 ## The Challenge
 
-Meridian's claims team received a request to identify all historical claims where a specific cause type was either confirmed or identified as the most probable cause -- across a backlog of several hundred investigation reports.
+Hartwell's operations team received a request to identify all historical claims where a specific cause type was either confirmed or identified as the most probable cause -- across a backlog of several hundred investigation reports.
 
 Each report was a free-text document written by an independent adjuster or investigator. Reports varied in length (2-10 pages), used hedged language ("probable cause", "consistent with", "cannot be definitively determined"), and embedded the key finding across different sections -- sometimes in Conclusion, sometimes in Findings, sometimes scattered through the narrative.
 
