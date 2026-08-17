@@ -36,9 +36,9 @@ Key decisions:
 | Metric | Result |
 |---|---|
 | Reports processed | 400 |
-| Processing time | Under 2 hours (vs. 60-100 hours manual) |
+| Processing time | Under 2 hours, processed sequentially one report at a time (vs. 60-100 hours manual) |
 | Cause classifications returned | Confirmed: 187, Probable: 134, Not determinable: 79 |
-| Manual spot-check accuracy | Reviewed 40 randomly selected outputs; all classifications agreed with analyst review |
+| Manual spot-check accuracy | Reviewed 40 randomly selected outputs (10% sample, standard for this type of validation); all classifications agreed with analyst review |
 
 > Results are representative of the specific engagement. Accuracy will vary based on report quality and prompt tuning for your domain.
 
@@ -52,4 +52,4 @@ Key decisions:
 
 The biggest prompt engineering challenge was distinguishing "probable cause" from "contributing factor". Early versions over-classified contributing factors as probable causes. Adding explicit definitions and examples to the prompt resolved this.
 
-For very long reports (8-10 pages), summarizing or chunking the report before sending improved both cost and consistency. The pipeline includes basic length handling for this reason.
+For very long reports (8-10 pages), sending the full text hurt both cost and consistency. The pipeline now condenses reports over ~12,000 characters to their cause-relevant sections (Conclusion, Findings, Probable Cause) with a preliminary LLM call before running the main extraction -- this triggers automatically based on report length, no manual flagging needed.

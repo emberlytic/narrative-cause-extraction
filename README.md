@@ -17,11 +17,16 @@ Designed for reports with defined section headings (Conclusion, Findings, Probab
 ```mermaid
 flowchart LR
     A[Reports CSV] --> B[Report Reader]
-    B --> C[Extraction Pipeline]
-    C --> D[LLM API]
-    D --> E[Parse JSON Response]
-    E --> F[results.csv]
+    B --> C{Over 12k chars?}
+    C -->|Yes| D[Condense to cause-relevant text]
+    C -->|No| E[Extraction Pipeline]
+    D --> E
+    E --> F[LLM API]
+    F --> G[Parse JSON Response]
+    G --> H[results.csv]
 ```
+
+Reports longer than ~12,000 characters are automatically condensed to their cause-relevant content (Conclusion, Findings, Probable Cause sections) with a preliminary LLM call before extraction, rather than being sent in full. This keeps cost and consistency in check on long reports without truncating them.
 
 ## Stack
 
@@ -64,6 +69,17 @@ Processing 18 reports...
 ...
 
 Results saved to: results.csv
+```
+
+Each row in `results.csv` also includes a `reasoning` field with a one-sentence explanation for the determination, e.g.:
+
+```json
+{
+  "confirmed_cause": "Electrical fault at distribution panel",
+  "probable_cause": "",
+  "confidence": "confirmed",
+  "reasoning": "The report's Conclusion section explicitly states the panel fault as the determined cause."
+}
 ```
 
 ## Input Format

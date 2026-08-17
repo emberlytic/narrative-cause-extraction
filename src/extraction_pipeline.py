@@ -1,7 +1,7 @@
 import json
 import os
 
-MAX_REPORT_CHARS = 12000
+CONDENSE_THRESHOLD_CHARS = 12000
 
 PROMPT_TEMPLATE = """You are an analyst extracting cause information from investigation reports.
 
@@ -25,10 +25,62 @@ Respond with a JSON object only, no other text:
   "reasoning": "..."
 }}"""
 
+CONDENSE_PROMPT_TEMPLATE = """The investigation report below is long. Condense it down to the sentences and \
+sections relevant to determining the cause of the incident (e.g. Conclusion, Findings, Probable Cause, or \
+equivalent sections). Preserve the exact wording of any cause-related statements. Omit background, \
+procedural, and administrative content that doesn't bear on the cause determination.
+
+Return only the condensed report text, no commentary.
+
+REPORT:
+{report_text}"""
+
+
+def _call_openai_text(prompt: str) -> str:
+    from openai import OpenAI
+
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    response = client.chat.completions.create(
+        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+    )
+    return response.choices[0].message.content
+
+
+def _call_anthropic_text(prompt: str) -> str:
+    import anthropic
+
+    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    message = client.messages.create(
+        model=os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return message.content[0].text
+
+
+def _call_llm_text(prompt: str) -> str:
+    provider = os.getenv("LLM_PROVIDER", "openai").lower()
+    if provider == "anthropic":
+        return _call_anthropic_text(prompt)
+    return _call_openai_text(prompt)
+
+
+def _condense_report(report_text: str) -> str:
+    """Condense long reports to their cause-relevant content before extraction.
+
+    Triggers automatically for reports over CONDENSE_THRESHOLD_CHARS -- this keeps
+    the extraction prompt focused and reduces cost/inconsistency on long documents
+    instead of silently truncating them.
+    """
+    return _call_llm_text(CONDENSE_PROMPT_TEMPLATE.format(report_text=report_text))
+
 
 def _build_prompt(report_text: str) -> str:
-    truncated = report_text[:MAX_REPORT_CHARS]
-    return PROMPT_TEMPLATE.format(report_text=truncated)
+    if len(report_text) > CONDENSE_THRESHOLD_CHARS:
+        report_text = _condense_report(report_text)
+    return PROMPT_TEMPLATE.format(report_text=report_text)
 
 
 def _parse_result(text: str) -> dict:
