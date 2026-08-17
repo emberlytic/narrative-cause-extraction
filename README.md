@@ -1,5 +1,7 @@
 # Narrative Cause Extraction Pipeline
 
+![tests](https://github.com/emberlytic/narrative-cause-extraction/actions/workflows/tests.yml/badge.svg)
+
 > Reads free-text investigation reports at scale and extracts confirmed cause, probable cause, and a confidence flag from each -- without manual review of every document.
 
 ## The Problem
@@ -115,6 +117,15 @@ The prompt is tuned for investigation reports with cause-finding language. It wo
 - Quality control failure reports
 
 Adjust the prompt in `src/extraction_pipeline.py` to match the terminology and structure of your reports.
+
+## Testing
+
+```bash
+pip install -r requirements-dev.txt
+pytest -v
+```
+
+Tests cover CSV loading, JSON response parsing, and the condensation logic (verifying it triggers only above the length threshold and that the condensed text, not the original, reaches the extraction prompt) -- with the LLM API mocked, so no API key or network access is needed. CI runs the same suite on every push via GitHub Actions (`.github/workflows/tests.yml`).
 
 ## Case Study
 
